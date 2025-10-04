@@ -28,7 +28,7 @@ const options = {
     },
     servers: [
       { url: `http://localhost:${PORT}/api` },
-      { url: "https://cse341-oe9i.onrender.com" }
+      { url: "https://crud-api-5ytk.onrender.com" }
     ],
   },
   apis: ["./routes/*.js"],
