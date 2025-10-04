@@ -1,3 +1,4 @@
+// ✅ Load environment variables first
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -11,6 +12,9 @@ const booksRouter = require("./routes/books");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+// 🧩 Debug: Check if environment variable loaded correctly
+console.log("🧩 MONGO_URI value check:", process.env.MONGO_URI ? "✅ Found" : "❌ Not Found");
 
 // Middleware
 app.use(cors());
@@ -28,7 +32,7 @@ const options = {
     },
     servers: [
       { url: `http://localhost:${PORT}/api` },
-      { url: "https://crud-api-5ytk.onrender.com" }
+      { url: "https://crud-api-5ytk.onrender.com/api" },
     ],
   },
   apis: ["./routes/*.js"],
@@ -45,9 +49,16 @@ app.get("/", (req, res) => {
 app.use("/api/users", usersRouter);
 app.use("/api/books", booksRouter);
 
-// MongoDB connection
+// ✅ MongoDB connection
+const mongoURI = process.env.MONGO_URI;
+
+if (!mongoURI) {
+  console.error("❌ MONGO_URI is missing. Please check your environment variables.");
+  process.exit(1); // Stop the app if the URI isn't set
+}
+
 mongoose
-  .connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log("✅ Connected to MongoDB");
     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
