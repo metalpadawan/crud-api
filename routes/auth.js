@@ -61,12 +61,12 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
-// ✅ Google OAuth entry (force stateless)
+// ✅ Google OAuth entry (stateless)
 router.get(
   "/google",
   passport.authenticate("google", {
     scope: ["profile", "email"],
-    session: false, // 👈 prevent passport from enabling sessions
+    session: false, // 👈 prevents passport session middleware
   })
 );
 
@@ -74,24 +74,36 @@ router.get(
 router.get(
   "/google/callback",
   passport.authenticate("google", {
-    session: false, // 👈 prevent sessions again
+    session: false,
     failureRedirect: "/auth/google/fail",
   }),
   (req, res) => {
-    // Issue a JWT after successful OAuth
     const token = signUser(req.user);
-    const redirectUrl = `${
-      process.env.FRONTEND_URL || "http://localhost:8080"
-    }/auth/success?token=${token}`;
+
+    // 👇 redirect to backend success page for testing (recommended)
+    const redirectUrl = `/auth/success?token=${token}`;
     res.redirect(redirectUrl);
   }
 );
 
+// ✅ Simple success route (for testing)
+router.get("/success", (req, res) => {
+  const { token } = req.query;
+  res.send(`
+    <h2>✅ Google OAuth Successful!</h2>
+    <p>Copy your JWT token below:</p>
+    <code style="background:#eee;padding:6px 12px;display:inline-block;">${token}</code>
+    <p>Use this token in Swagger (Authorize > Bearer Token)</p>
+    <a href="/api-docs" style="display:block;margin-top:10px;">Go to Swagger Docs</a>
+  `);
+});
+
+// ✅ Google fail route
 router.get("/google/fail", (req, res) =>
   res.status(401).json({ error: "Google auth failed" })
 );
 
-// ✅ Stateless logout (no session destruction needed)
+// ✅ Stateless logout (for JWT)
 router.get("/logout", (req, res) => {
   res.json({ ok: true, message: "Logged out (stateless mode)" });
 });
