@@ -57,13 +57,13 @@ router.post('/login', async (req, res, next) => {
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 // Callback: after Google authenticates, redirect with token (or return token)
-router.get('/google/callback',
-  passport.authenticate('google', { session: true, failureRedirect: '/auth/google/fail' }),
+router.get(
+  '/google/callback',
+  passport.authenticate('google', { session: false, failureRedirect: '/auth/google/fail' }),
   (req, res) => {
-    // Issue a JWT and redirect to front-end with token as query param (or show token)
+    // Issue a JWT token after successful OAuth
     const token = signUser(req.user);
-    // example: redirect to a URL that can read token from query param
-    const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/auth/success?token=${token}`;
+    const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:8080'}/auth/success?token=${token}`;
     res.redirect(redirectUrl);
   }
 );
