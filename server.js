@@ -32,7 +32,7 @@ app.use(morgan("dev"));
 
 // 🆕 Initialize passport middleware before using routes
 app.use(passport.initialize());
-app.use(passport.session && passport.session()); // optional (needed only if using sessions)
+// app.use(passport.session && passport.session()); // optional (needed only if using sessions)
 
 // Swagger setup
 const options = {
