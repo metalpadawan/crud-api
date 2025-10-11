@@ -6,6 +6,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
+const passport = require("passport"); // 🆕 Add passport
 
 // 🔐 Auth middleware (protect routes)
 const { requireAuth, requireRole } = require("./middleware/auth");
@@ -13,6 +14,10 @@ const { requireAuth, requireRole } = require("./middleware/auth");
 // Routers
 const usersRouter = require("./routes/users");
 const booksRouter = require("./routes/books");
+const authRouter = require("./routes/auth");
+
+// 🧩 Load passport configuration (make sure config/passport.js exists)
+require("./config/passport")(passport); // 🆕 initialize passport strategies
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -24,6 +29,10 @@ console.log("🧩 MONGO_URI value check:", process.env.MONGO_URI ? "✅ Found" :
 app.use(cors());
 app.use(express.json());
 app.use(morgan("dev"));
+
+// 🆕 Initialize passport middleware before using routes
+app.use(passport.initialize());
+app.use(passport.session && passport.session()); // optional (needed only if using sessions)
 
 // Swagger setup
 const options = {
@@ -59,7 +68,13 @@ app.get("/", (req, res) => {
   res.send("🚀 Welcome to Project 2 CRUD API! Visit /api-docs for Swagger documentation.");
 });
 
-// Routes
+// -------------------------
+// ✅ AUTH ROUTES COME FIRST
+// -------------------------
+app.use("/auth", authRouter); // 👈 correct path for Google OAuth routes
+
+// -------------------------
+// ✅ API ROUTES
 // -------------------------
 app.use("/api/users", usersRouter);
 app.use("/api/books", booksRouter);
